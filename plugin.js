@@ -1,5 +1,6 @@
 ﻿/**
  * @license Copyright (c) 2003-2014, CKSource - Frederico Knabben. All rights reserved.
+ * @author CKSource - Frederico Knabben. / Clemens Krack <info@clemenskrack.com>
  * For licensing, see LICENSE.md or http://ckeditor.com/license
  */
 
@@ -8,18 +9,18 @@
 ( function() {
 
 	var template = '<img alt="" src="" />',
+
 		templateBlock = new CKEDITOR.template(
 			'<figure class="{captionedClass}">' +
 				template +
 				'<figcaption>{captionPlaceholder}</figcaption>' +
 			'</figure>' ),
+		alignmentsArr = [ 'left', 'center', 'right' ],
 		alignmentsObj = { left: 0, center: 1, right: 2 },
 		regexPercent = /^\s*(\d+\%)\s*$/i;
 
 	CKEDITOR.plugins.add( 'image2', {
-		// jscs:disable maximumLineLength
-		lang: 'af,ar,bg,bn,bs,ca,cs,cy,da,de,el,en,en-au,en-ca,en-gb,eo,es,et,eu,fa,fi,fo,fr,fr-ca,gl,gu,he,hi,hr,hu,id,is,it,ja,ka,km,ko,ku,lt,lv,mk,mn,ms,nb,nl,no,pl,pt,pt-br,ro,ru,si,sk,sl,sq,sr,sr-latn,sv,th,tr,tt,ug,uk,vi,zh,zh-cn', // %REMOVE_LINE_CORE%
-		// jscs:enable maximumLineLength
+		lang: 'en,de',
 		requires: 'widget,dialog',
 		icons: 'image',
 		hidpi: true,
@@ -75,11 +76,11 @@
 				image = widgetDef( editor );
 
 			// Since filebrowser plugin discovers config properties by dialog (plugin?)
-			// names (sic!), this hack will be necessary as long as Image2 is not named
-			// Image. And since Image2 will never be Image, for sure some filebrowser logic
+			// names (sic!), this hack will be necessary as long as image2 is not named
+			// Image. And since image2 will never be Image, for sure some filebrowser logic
 			// got to be refined.
-			config.filebrowserImage2BrowseUrl = config.filebrowserImageBrowseUrl;
-			config.filebrowserImage2UploadUrl = config.filebrowserImageUploadUrl;
+			config.filebrowserimage2BrowseUrl = config.filebrowserImageBrowseUrl;
+			config.filebrowserimage2UploadUrl = config.filebrowserImageUploadUrl;
 
 			// Add custom elementspath names to widget definition.
 			image.pathName = lang.pathName;
@@ -263,9 +264,8 @@
 
 			// If now widget was destroyed just update wrapper's alignment.
 			// According to the new state.
-			else {
+			else
 				setWrapperAlign( this.widget, alignClasses );
-			}
 		}
 
 		return {
@@ -342,6 +342,19 @@
 					alt: this.data.alt
 				} );
 
+				// keep srcset & sizes attributes only when set.
+				if(this.data.srcset) {
+					this.parts.image.setAttribute('srcset', this.data.srcset);
+				} else {
+					this.parts.image.removeAttribute('srcset');
+				}
+
+				if(this.data.sizes) {
+					this.parts.image.setAttribute('sizes', this.data.sizes);
+				} else {
+					this.parts.image.removeAttribute('sizes');
+				}
+
 				// If shifting non-captioned -> captioned, remove classes
 				// related to styles from <img/>.
 				if ( this.oldData && !this.oldData.hasCaption && this.data.hasCaption ) {
@@ -364,6 +377,8 @@
 					data = {
 						hasCaption: !!this.parts.caption,
 						src: image.getAttribute( 'src' ),
+						srcset: image.getAttribute( 'srcset' ) || '',
+						sizes: image.getAttribute( 'sizes' ) || '',
 						alt: image.getAttribute( 'alt' ) || '',
 						width: image.getAttribute( 'width' ) || '',
 						height: image.getAttribute( 'height' ) || '',
@@ -446,25 +461,25 @@
 				}, this );
 			},
 
-			// Overrides default method to handle internal mutability of Image2.
+			// Overrides default method to handle internal mutability of image2.
 			// @see CKEDITOR.plugins.widget#addClass
 			addClass: function( className ) {
 				getStyleableElement( this ).addClass( className );
 			},
 
-			// Overrides default method to handle internal mutability of Image2.
+			// Overrides default method to handle internal mutability of image2.
 			// @see CKEDITOR.plugins.widget#hasClass
 			hasClass: function( className ) {
 				return getStyleableElement( this ).hasClass( className );
 			},
 
-			// Overrides default method to handle internal mutability of Image2.
+			// Overrides default method to handle internal mutability of image2.
 			// @see CKEDITOR.plugins.widget#removeClass
 			removeClass: function( className ) {
 				getStyleableElement( this ).removeClass( className );
 			},
 
-			// Overrides default method to handle internal mutability of Image2.
+			// Overrides default method to handle internal mutability of image2.
 			// @see CKEDITOR.plugins.widget#getClasses
 			getClasses: ( function() {
 				var classRegex = new RegExp( '^(' + [].concat( captionedClass, alignClasses ).join( '|' ) + ')$' );
@@ -696,9 +711,8 @@
 
 					editable.insertElementIntoRange( replacing, range );
 				}
-				else {
+				else
 					replacing.replace( replaced );
-				}
 			}
 
 			return function( shift ) {
@@ -788,12 +802,10 @@
 				// 			<img />
 				// 		</p>
 				// 	</div>
-				if ( hasCaption ) {
-					wrapper.addClass( alignClasses[1] );
-				}
-			} else if ( align != 'none' ) {
+				if ( hasCaption )
+					wrapper.addClass( alignClasses[ 1 ] );
+			} else if ( align != 'none' )
 				wrapper.addClass( alignClasses[ alignmentsObj[ align ] ] );
-			}
 		} else {
 			if ( align == 'center' ) {
 				if ( hasCaption )
@@ -866,13 +878,12 @@
 			}
 
 			// No center wrapper has been found.
-			else if ( name == 'figure' && el.hasClass( captionedClass ) ) {
+			else if ( name == 'figure' && el.hasClass( captionedClass ) )
 				image = el.getFirst( 'img' ) || el.getFirst( 'a' ).getFirst( 'img' );
 
-				// Upcast linked image like <a><img/></a>.
-			} else if ( isLinkedOrStandaloneImage( el ) ) {
-				image = el.name == 'a' ? el.children[0] : el;
-			}
+			// Upcast linked image like <a><img/></a>.
+			else if ( isLinkedOrStandaloneImage( el ) )
+				image = el.name == 'a' ? el.children[ 0 ] : el;
 
 			if ( !image )
 				return;
@@ -1074,9 +1085,8 @@
 			// and which could be corrupted (e.g. resizer span has been lost).
 			if ( oldResizeWrapper.is( 'span' ) )
 				oldResizeWrapper.remove();
-		} else {
+		} else
 			widget.wrapper.append( resizer );
-		}
 
 		// Calculate values of size variables and mouse offsets.
 		resizer.on( 'mousedown', function( evt ) {
@@ -1199,9 +1209,8 @@
 						}
 
 						// Case: II.
-						else {
+						else
 							adjustToY();
-						}
 					}
 				}
 
@@ -1218,9 +1227,8 @@
 						}
 
 						// Case: I.
-						else {
+						else
 							adjustToY();
-						}
 					} else {
 						// Case: III.
 						if ( moveDiffY <= 0 )
@@ -1228,11 +1236,10 @@
 
 						// Case: II.
 						else {
-							if ( moveRatio >= ratio ) {
+							if ( moveRatio >= ratio )
 								adjustToX();
-							} else {
+							else
 								adjustToY();
-							}
 						}
 					}
 				}
@@ -1242,12 +1249,11 @@
 				if ( newWidth >= 15 && newHeight >= 15 ) {
 					image.setAttributes( { width: newWidth, height: newHeight } );
 					updateData = true;
-				} else {
+				} else
 					updateData = false;
-				}
 			}
 
-			function onMouseUp() {
+			function onMouseUp( evt ) {
 				var l;
 
 				while ( ( l = listeners.pop() ) )
@@ -1325,7 +1331,7 @@
 				// Cache "enabled" on first use. This is because filter#checkFeature may
 				// not be available during plugin's afterInit in the future — a moment when
 				// alignCommandIntegrator is called.
-				if ( enabled === undefined )
+				if ( enabled == undefined )
 					enabled = editor.filter.checkFeature( editor.widgets.registered.image.features.align );
 
 				// Don't allow justify commands when widget alignment is disabled (#11004).
@@ -1389,9 +1395,8 @@
 
 						// Set collected data to widget.
 						widget.setData( 'link', data );
-					} else {
+					} else
 						onOk.apply( this, arguments );
-					}
 				};
 			}
 		} );
@@ -1461,7 +1466,7 @@
 					match: centerWrapperChecker( editor )
 				},
 				img: {
-					attributes: '!src,alt,width,height'
+					attributes: '!src,alt,width,height,srcset,sizes'
 				},
 				figure: {
 					classes: '!' + editor.config.image2_captionedClass

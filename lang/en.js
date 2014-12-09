@@ -16,5 +16,7 @@ CKEDITOR.plugins.setLang( 'image2', 'en', {
 	resizer: 'Click and drag to resize',
 	title: 'Image Properties',
 	uploadTab: 'Upload',
-	urlMissing: 'Image source URL is missing.'
+	urlMissing: 'Image source URL is missing.',
+	sizes: 'Responsive Sizes',
+	srcset: 'Sourceset (responsive)'
 } );

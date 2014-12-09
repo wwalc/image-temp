@@ -1,5 +1,6 @@
 /**
  * @license Copyright (c) 2003-2014, CKSource - Frederico Knabben. All rights reserved.
+ * @author CKSource - Frederico Knabben. / Clemens Krack <info@clemenskrack.com>
  * For licensing, see LICENSE.md or http://ckeditor.com/license
  */
 
@@ -46,6 +47,7 @@ CKEDITOR.dialog.add( 'image2', function( editor ) {
 		features = editor.widgets.registered.image.features,
 
 		// Functions inherited from image2 plugin.
+		checkHasNaturalRatio = helpers.checkHasNaturalRatio,
 		getNatural = helpers.getNatural,
 
 		// Global variables referring to the dialog's context.
@@ -75,7 +77,7 @@ CKEDITOR.dialog.add( 'image2', function( editor ) {
 			isValid = !!( match && parseInt( match[ 1 ], 10 ) !== 0 );
 
 		if ( !isValid )
-			alert( commonLang[ 'invalid' + CKEDITOR.tools.capitalize( this.id ) ] ); // jshint ignore:line
+			alert( commonLang[ 'invalid' + CKEDITOR.tools.capitalize( this.id ) ] );
 
 		return isValid;
 	}
@@ -356,7 +358,7 @@ CKEDITOR.dialog.add( 'image2', function( editor ) {
 					widget.setData( 'src', this.getValue() );
 				},
 				validate: CKEDITOR.dialog.validate.notEmpty( lang.urlMissing )
-			}
+			},
 		];
 
 	// Render the "Browse" button on demand to avoid an "empty" (hidden child)
@@ -420,6 +422,17 @@ CKEDITOR.dialog.add( 'image2', function( editor ) {
 								children: srcBoxChildren
 							}
 						]
+					},
+					{
+						id: 'srcset',
+						type: 'text',
+						label: lang.srcset,
+						setup: function( widget ) {
+							this.setValue(widget.data.srcset);
+						},
+                        commit: function ( widget ) {
+                            widget.setData('srcset', this.getValue());
+                        }
 					},
 					{
 						id: 'alt',
@@ -487,6 +500,17 @@ CKEDITOR.dialog.add( 'image2', function( editor ) {
 						]
 					},
 					{
+						id: 'sizes',
+						type: 'text',
+						label: lang.sizes,
+						setup: function( widget ) {
+                            this.setValue( widget.data.sizes);
+                        },
+                        commit: function ( widget ) {
+                            widget.setData( 'sizes', this.getValue() );
+                        }
+					},
+					{
 						type: 'hbox',
 						id: 'alignment',
 						requiredContent: features.align.requiredContent,
@@ -498,8 +522,7 @@ CKEDITOR.dialog.add( 'image2', function( editor ) {
 									[ commonLang.alignNone, 'none' ],
 									[ commonLang.alignLeft, 'left' ],
 									[ commonLang.alignCenter, 'center' ],
-									[ commonLang.alignRight, 'right' ]
-								],
+									[ commonLang.alignRight, 'right' ] ],
 								label: commonLang.align,
 								setup: function( widget ) {
 									this.setValue( widget.data.align );
